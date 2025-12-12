@@ -20,13 +20,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
-import androidx.compose.ui.tooling.preview.Preview
+import kotlinx.coroutines.delay
 import cl.huertohogar.app.navigation.Destinos
 import cl.huertohogar.app.viewmodel.RegistroFormEvent
 import cl.huertohogar.app.viewmodel.RegistroViewModel
-import kotlinx.coroutines.delay
-import cl.huertohogar.app.model.UserRepository
 import cl.huertohogar.app.ui.theme.HuertoHogarAppTheme
 
 @Composable
@@ -36,7 +33,7 @@ fun RegistroScreen(
 ) {
     val uiState = viewModel.uiState
 
-    var scale by remember { mutableFloatStateOf(0.9f) }
+    var scale by remember { mutableStateOf(0.9f) }
     LaunchedEffect(Unit) {
         delay(100)
         scale = 1f
@@ -56,10 +53,7 @@ fun RegistroScreen(
             .fillMaxSize()
             .background(
                 Brush.verticalGradient(
-                    listOf(
-                        Color(0xFF4CAF50),
-                        Color(0xFFA5D6A7)
-                    )
+                    listOf(Color(0xFF4CAF50), Color(0xFFA5D6A7))
                 )
             ),
         color = Color.Transparent
@@ -72,6 +66,7 @@ fun RegistroScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(16.dp))
@@ -82,8 +77,7 @@ fun RegistroScreen(
                     text = "Crear Cuenta 🌱",
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    textAlign = TextAlign.Center
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
 
@@ -91,90 +85,106 @@ fun RegistroScreen(
 
             OutlinedTextField(
                 value = uiState.nombre,
-                onValueChange = { viewModel.onEvent(RegistroFormEvent.NombreChanged(it)) },
+                onValueChange = { viewModel.onEvent(RegistroFormEvent.Nombre(it)) },
                 label = { Text("Nombre") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Color.White, RoundedCornerShape(12.dp)),
-                singleLine = true,
                 isError = uiState.nombreError != null,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White
-                )
+                singleLine = true
             )
             if (uiState.nombreError != null) {
-                Text(text = uiState.nombreError, color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
-            } else {
-                Text(text = "Ingrese su nombre completo.", fontSize = 12.sp, color = Color.White)
+                Text(uiState.nombreError!!, color = Color.Red, fontSize = 12.sp)
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
             OutlinedTextField(
-                value = uiState.apellido,
-                onValueChange = { viewModel.onEvent(RegistroFormEvent.ApellidoChanged(it)) },
-                label = { Text("Apellido") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.White, RoundedCornerShape(12.dp)),
-                singleLine = true,
-                isError = uiState.apellidoError != null,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White
-                )
-            )
-            if (uiState.apellidoError != null) {
-                Text(text = uiState.apellidoError, color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
-            } else {
-                Text(text = "Ingrese su apellido completo.", fontSize = 12.sp, color = Color.White)
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            OutlinedTextField(
-                value = uiState.email,
-                onValueChange = { viewModel.onEvent(RegistroFormEvent.EmailChanged(it)) },
+                value = uiState.correo,
+                onValueChange = { viewModel.onEvent(RegistroFormEvent.Correo(it)) },
                 label = { Text("Correo electrónico") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Color.White, RoundedCornerShape(12.dp)),
-                singleLine = true,
-                isError = uiState.emailError != null,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White
-                )
+                isError = uiState.correoError != null,
+                singleLine = true
             )
-            if (uiState.emailError != null) {
-                Text(text = uiState.emailError, color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
-            } else {
-                Text(text = "Ingrese un email válido.", fontSize = 12.sp, color = Color.White)
+            if (uiState.correoError != null) {
+                Text(uiState.correoError!!, color = Color.Red, fontSize = 12.sp)
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
             OutlinedTextField(
-                value = uiState.password,
-                onValueChange = { viewModel.onEvent(RegistroFormEvent.PasswordChanged(it)) },
+                value = uiState.rut,
+                onValueChange = { viewModel.onEvent(RegistroFormEvent.Rut(it)) },
+                label = { Text("RUT") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.White, RoundedCornerShape(12.dp)),
+                isError = uiState.rutError != null,
+                singleLine = true
+            )
+            if (uiState.rutError != null) {
+                Text(uiState.rutError!!, color = Color.Red, fontSize = 12.sp)
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            OutlinedTextField(
+                value = uiState.direccion,
+                onValueChange = { viewModel.onEvent(RegistroFormEvent.Direccion(it)) },
+                label = { Text("Dirección") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.White, RoundedCornerShape(12.dp)),
+                isError = uiState.direccionError != null,
+                singleLine = true
+            )
+            if (uiState.direccionError != null) {
+                Text(uiState.direccionError!!, color = Color.Red, fontSize = 12.sp)
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            OutlinedTextField(
+                value = uiState.region,
+                onValueChange = { viewModel.onEvent(RegistroFormEvent.Region(it)) },
+                label = { Text("Región") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.White, RoundedCornerShape(12.dp)),
+                singleLine = true
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            OutlinedTextField(
+                value = uiState.comuna,
+                onValueChange = { viewModel.onEvent(RegistroFormEvent.Comuna(it)) },
+                label = { Text("Comuna") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.White, RoundedCornerShape(12.dp)),
+                singleLine = true
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            OutlinedTextField(
+                value = uiState.contrasena,
+                onValueChange = { viewModel.onEvent(RegistroFormEvent.Contrasena(it)) },
                 label = { Text("Contraseña") },
                 visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Color.White, RoundedCornerShape(12.dp)),
-                singleLine = true,
-                isError = uiState.passwordError != null,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White
-                )
+                isError = uiState.contrasenaError != null,
+                singleLine = true
             )
-            if (uiState.passwordError != null) {
-                Text(text = uiState.passwordError, color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
-            } else {
-                Text(text = "La contraseña debe tener al menos 6 caracteres.", fontSize = 12.sp, color = Color.White)
+            if (uiState.contrasenaError != null) {
+                Text(uiState.contrasenaError!!, color = Color.Red, fontSize = 12.sp)
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -190,20 +200,17 @@ fun RegistroScreen(
 
             if (uiState.errorMessage != null) {
                 Spacer(modifier = Modifier.height(16.dp))
-                Text(text = uiState.errorMessage, color = MaterialTheme.colorScheme.error, fontSize = 14.sp)
+                Text(uiState.errorMessage!!, color = Color.Red, fontSize = 14.sp)
             }
 
             if (uiState.registroExitoso) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "Registro exitoso 🌿 Redirigiendo al login...",
+                    "Registro exitoso 🌿 Redirigiendo...",
                     color = Color.White,
-                    fontSize = 14.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
         }
     }
 }
-
-

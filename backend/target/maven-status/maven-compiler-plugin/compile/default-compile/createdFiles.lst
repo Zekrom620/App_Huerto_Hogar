@@ -1,0 +1,12 @@
+com\huertohogar\backend\service\UserService.class
+com\huertohogar\backend\repository\ProductRepository.class
+com\huertohogar\backend\repository\UserRepository.class
+com\huertohogar\backend\model\Product.class
+com\huertohogar\backend\service\ProductService.class
+com\huertohogar\backend\controller\ProductController.class
+com\huertohogar\backend\filter\JwtAuthenticationFilter.class
+com\huertohogar\backend\model\User.class
+com\huertohogar\backend\utils\JwtUtil.class
+com\huertohogar\backend\BackendApplication.class
+com\huertohogar\backend\config\SecurityConfig.class
+com\huertohogar\backend\controller\UserController.class

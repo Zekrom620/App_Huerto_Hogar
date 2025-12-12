@@ -1,21 +1,13 @@
 package cl.huertohogar.app.model
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.PrimaryKey
-
-@Entity(tableName = "users")
 data class User(
-    @PrimaryKey
-    @ColumnInfo(name = "email")
-    val email: String,
-
-    @ColumnInfo(name = "password")
-    val passwordHash: String,
-
-    @ColumnInfo(name = "nombre")
+    val id: Long? = null,
     val nombre: String,
-
-    @ColumnInfo(name = "apellido")
-    val apellido: String
+    val correo: String,
+    val contrasena: String,
+    val rut: String,
+    val direccion: String,
+    val region: String,
+    val comuna: String,
+    val rol: String? = null
 )

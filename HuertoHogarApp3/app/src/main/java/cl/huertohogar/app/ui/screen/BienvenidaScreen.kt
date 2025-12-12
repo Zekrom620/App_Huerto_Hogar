@@ -35,7 +35,6 @@ fun BienvenidaScreen(
         animationSpec = androidx.compose.animation.core.tween(durationMillis = 1200)
     )
 
-    // Activar animación al mostrar pantalla
     LaunchedEffect(Unit) {
         delay(300)
         visible = true

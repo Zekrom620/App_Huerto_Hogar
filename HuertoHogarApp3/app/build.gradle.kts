@@ -34,6 +34,19 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
+    packaging {
+        resources {
+            excludes += "META-INF/LICENSE.md"
+            excludes += "META-INF/LICENSE-apache-2.0.txt"
+            excludes += "META-INF/LICENSE"
+            excludes += "META-INF/NOTICE.md"
+            excludes += "META-INF/NOTICE"
+            excludes += "META-INF/ASL2.0"
+            excludes += "META-INF/LICENSE-notice.md"
+        }
+    }
+
     kotlinOptions {
         jvmTarget = "11"
     }
@@ -67,6 +80,44 @@ dependencies {
     implementation("com.google.android.gms:play-services-location:21.0.1")
     // Para usar la ubicación en coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.8.0")
+
+    // Retrofit
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+
+    // Coroutines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
+    // ViewModel utilities for Compose (del profe)
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.3")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.3")
+
+    // Activity Compose (del profe)
+    implementation("androidx.activity:activity-compose:1.9.0")
+
+    // 🔥 Necesario para cargar imágenes desde URL
+    implementation("io.coil-kt:coil-compose:2.4.0")
+
+    // ------------------------
+    // PRUEBAS UNITARIAS (test)
+    // ------------------------
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("io.mockk:mockk:1.13.8")
+
+    // ------------------------
+    // PRUEBAS INSTRUMENTADAS (androidTest)
+    // ------------------------
+    androidTestImplementation("io.mockk:mockk-android:1.13.8")
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+
+    // Compose UI Tests (si usas Compose)
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+
+    // Necesario para permitir acceso a actividades
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
+
+
 
     // --- DEPENDENCIAS BASE DE COMPOSE ---
 

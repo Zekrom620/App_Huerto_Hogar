@@ -52,13 +52,8 @@ import com.mapbox.maps.extension.compose.animation.viewport.rememberMapViewportS
 import kotlinx.coroutines.tasks.await
 
 
-// Define una conexión que CONSUME todo el desplazamiento vertical antes de que
-// el componente padre (el Column principal) tenga oportunidad de reaccionar.
-// Esto resuelve el conflicto de gestos entre el mapa y el scroll de la pantalla.
 private val AlwaysConsumeNestedScrollConnection = object : NestedScrollConnection {
-    // Consume el desplazamiento antes de que el padre pueda usarlo
     override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset = available
-    // Consume la inercia del "lanzamiento" (fling) antes de que el padre pueda usarlo
     override suspend fun onPreFling(available: Velocity): Velocity = available
 }
 

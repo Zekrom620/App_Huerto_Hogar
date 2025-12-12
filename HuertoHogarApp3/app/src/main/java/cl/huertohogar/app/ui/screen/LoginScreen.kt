@@ -26,12 +26,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
-import androidx.compose.ui.tooling.preview.Preview
 import cl.huertohogar.app.R
-import cl.huertohogar.app.model.UserRepository
 import cl.huertohogar.app.navigation.Destinos
-import cl.huertohogar.app.ui.theme.HuertoHogarAppTheme
 import cl.huertohogar.app.viewmodel.LoginFormEvent
 import cl.huertohogar.app.viewmodel.LoginViewModel
 
@@ -42,6 +38,7 @@ fun LoginScreen(
 ) {
     val uiState = viewModel.uiState
 
+    // ✔ Navega cuando loginExitoso = true
     LaunchedEffect(uiState.loginExitoso) {
         if (uiState.loginExitoso) {
             navController.navigate(Destinos.Lobby.ruta) {
@@ -58,8 +55,10 @@ fun LoginScreen(
     )
 
     val buttonColor by animateColorAsState(
-        targetValue = if (isPressed) MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
-        else MaterialTheme.colorScheme.primary,
+        targetValue = if (isPressed)
+            MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
+        else
+            MaterialTheme.colorScheme.primary,
         animationSpec = tween(300)
     )
 
@@ -75,6 +74,7 @@ fun LoginScreen(
                 )
             )
     ) {
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -114,23 +114,24 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(30.dp))
 
             OutlinedTextField(
-                value = uiState.email,
-                onValueChange = { viewModel.onEvent(LoginFormEvent.EmailChanged(it)) },
+                value = uiState.correo,
+                onValueChange = {
+                    viewModel.onEvent(LoginFormEvent.CorreoChanged(it))
+                },
                 label = { Text("Correo electrónico") },
-                isError = uiState.emailError != null,
+                isError = uiState.correoError != null,
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Color.White, RoundedCornerShape(12.dp)),
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White,
-                    disabledContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White
                 )
             )
-            if (uiState.emailError != null) {
+            if (uiState.correoError != null) {
                 Text(
-                    text = uiState.emailError,
+                    text = uiState.correoError!!,
                     color = MaterialTheme.colorScheme.error,
                     modifier = Modifier.padding(top = 4.dp)
                 )
@@ -139,24 +140,25 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             OutlinedTextField(
-                value = uiState.password,
-                onValueChange = { viewModel.onEvent(LoginFormEvent.PasswordChanged(it)) },
+                value = uiState.contrasena,
+                onValueChange = {
+                    viewModel.onEvent(LoginFormEvent.ContrasenaChanged(it))
+                },
                 label = { Text("Contraseña") },
                 visualTransformation = PasswordVisualTransformation(),
-                isError = uiState.passwordError != null,
+                isError = uiState.contrasenaError != null,
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Color.White, RoundedCornerShape(12.dp)),
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White,
-                    disabledContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White
                 )
             )
-            if (uiState.passwordError != null) {
+            if (uiState.contrasenaError != null) {
                 Text(
-                    text = uiState.passwordError,
+                    text = uiState.contrasenaError!!,
                     color = MaterialTheme.colorScheme.error,
                     modifier = Modifier.padding(top = 4.dp)
                 )
@@ -175,19 +177,24 @@ fun LoginScreen(
                     },
                 colors = ButtonDefaults.buttonColors(containerColor = buttonColor),
                 shape = RoundedCornerShape(12.dp),
-                interactionSource = remember { MutableInteractionSource() },
+                interactionSource = remember { MutableInteractionSource() }
             ) {
                 Text("Entrar", fontSize = 18.sp)
             }
 
             if (uiState.errorMessage != null) {
                 Spacer(modifier = Modifier.height(16.dp))
-                Text(text = uiState.errorMessage, color = MaterialTheme.colorScheme.error)
+                Text(
+                    text = uiState.errorMessage!!,
+                    color = MaterialTheme.colorScheme.error
+                )
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            TextButton(onClick = { navController.navigate(Destinos.Registro.ruta) }) {
+            TextButton(onClick = {
+                navController.navigate(Destinos.Registro.ruta)
+            }) {
                 Text(
                     "¿No tienes cuenta? Regístrate",
                     color = MaterialTheme.colorScheme.secondary,
@@ -197,4 +204,3 @@ fun LoginScreen(
         }
     }
 }
-

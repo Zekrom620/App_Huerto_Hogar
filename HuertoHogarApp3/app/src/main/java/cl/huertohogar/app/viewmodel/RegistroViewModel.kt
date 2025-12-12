@@ -1,154 +1,104 @@
 package cl.huertohogar.app.viewmodel
 
-import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import cl.huertohogar.app.model.AppDatabase
 import cl.huertohogar.app.model.User
-import cl.huertohogar.app.model.UserRepository
-import kotlinx.coroutines.delay
+import cl.huertohogar.app.repository.UserRepositoryApi
 import kotlinx.coroutines.launch
-import java.util.regex.Pattern
 
-// Estado del formulario de registro
 data class RegistroUiState(
-    val email: String = "",
-    val password: String = "",
     val nombre: String = "",
-    val apellido: String = "",
+    val correo: String = "",
+    val contrasena: String = "",
+    val rut: String = "",
+    val direccion: String = "",
+    val region: String = "",
+    val comuna: String = "",
     val isLoading: Boolean = false,
     val registroExitoso: Boolean = false,
     val errorMessage: String? = null,
-    val emailError: String? = null,
-    val passwordError: String? = null,
+
     val nombreError: String? = null,
-    val apellidoError: String? = null
+    val correoError: String? = null,
+    val contrasenaError: String? = null,
+    val rutError: String? = null,
+    val direccionError: String? = null
 )
 
 sealed class RegistroFormEvent {
-    data class EmailChanged(val value: String) : RegistroFormEvent()
-    data class PasswordChanged(val value: String) : RegistroFormEvent()
-    data class NombreChanged(val value: String) : RegistroFormEvent()
-    data class ApellidoChanged(val value: String) : RegistroFormEvent()
+    data class Nombre(val value: String) : RegistroFormEvent()
+    data class Correo(val value: String) : RegistroFormEvent()
+    data class Contrasena(val value: String) : RegistroFormEvent()
+    data class Rut(val value: String) : RegistroFormEvent()
+    data class Direccion(val value: String) : RegistroFormEvent()
+    data class Region(val value: String) : RegistroFormEvent()
+    data class Comuna(val value: String) : RegistroFormEvent()
     object Submit : RegistroFormEvent()
 }
 
-class RegistroViewModel(context: Context) : ViewModel() {
+class RegistroViewModel : ViewModel() {
 
-    // Crear repositorio internamente usando context (igual que LoginViewModel)
-    private val repository: UserRepository by lazy {
-        val db = AppDatabase.getDatabase(context)
-        UserRepository(db.userDao())
-    }
+    private val repository = UserRepositoryApi()
 
     var uiState by mutableStateOf(RegistroUiState())
         private set
 
-    // Validador de email
-    private val emailAddressPattern: Pattern = Pattern.compile(
-        "[a-zA-Z0-9+._%\\-]{1,256}" +
-                "@" +
-                "[a-zA-Z0-9][a-zA-Z0-9\\-]{0,64}" +
-                "(" +
-                "\\." +
-                "[a-zA-Z0-9][a-zA-Z0-9\\-]{0,25}" +
-                ")+"
-    )
-
     fun onEvent(event: RegistroFormEvent) {
         when (event) {
-            is RegistroFormEvent.EmailChanged ->
-                uiState = uiState.copy(email = event.value, emailError = null)
-
-            is RegistroFormEvent.PasswordChanged ->
-                uiState = uiState.copy(password = event.value, passwordError = null)
-
-            is RegistroFormEvent.NombreChanged ->
-                uiState = uiState.copy(nombre = event.value, nombreError = null)
-
-            is RegistroFormEvent.ApellidoChanged ->
-                uiState = uiState.copy(apellido = event.value, apellidoError = null)
-
-            RegistroFormEvent.Submit -> submitRegistration()
+            is RegistroFormEvent.Nombre -> uiState = uiState.copy(nombre = event.value, nombreError = null)
+            is RegistroFormEvent.Correo -> uiState = uiState.copy(correo = event.value, correoError = null)
+            is RegistroFormEvent.Contrasena -> uiState = uiState.copy(contrasena = event.value, contrasenaError = null)
+            is RegistroFormEvent.Rut -> uiState = uiState.copy(rut = event.value, rutError = null)
+            is RegistroFormEvent.Direccion -> uiState = uiState.copy(direccion = event.value, direccionError = null)
+            is RegistroFormEvent.Region -> uiState = uiState.copy(region = event.value)
+            is RegistroFormEvent.Comuna -> uiState = uiState.copy(comuna = event.value)
+            RegistroFormEvent.Submit -> registrar()
         }
     }
 
-    private fun validateFields(): Boolean {
-        var isValid = true
-        var newState = uiState.copy(
-            emailError = null,
-            passwordError = null,
-            nombreError = null,
-            apellidoError = null
-        )
+    private fun validar(): Boolean {
+        var ok = true
+        var st = uiState
 
-        if (newState.nombre.isBlank()) {
-            newState = newState.copy(nombreError = "El nombre es obligatorio.")
-            isValid = false
-        }
-        if (newState.apellido.isBlank()) {
-            newState = newState.copy(apellidoError = "El apellido es obligatorio.")
-            isValid = false
-        }
-        if (!emailAddressPattern.matcher(newState.email).matches()) {
-            newState = newState.copy(emailError = "Ingrese un email válido.")
-            isValid = false
-        }
-        if (newState.password.length < 6) {
-            newState = newState.copy(passwordError = "La contraseña debe tener al menos 6 caracteres.")
-            isValid = false
-        }
+        if (st.nombre.isBlank()) { st = st.copy(nombreError = "Requerido"); ok = false }
+        if (st.correo.isBlank()) { st = st.copy(correoError = "Requerido"); ok = false }
+        if (st.contrasena.length < 6) { st = st.copy(contrasenaError = "Mínimo 6 caracteres"); ok = false }
+        if (st.rut.isBlank()) { st = st.copy(rutError = "Requerido"); ok = false }
+        if (st.direccion.isBlank()) { st = st.copy(direccionError = "Requerido"); ok = false }
 
-        uiState = newState
-        return isValid
+        uiState = st
+        return ok
     }
 
-    private fun submitRegistration() {
-        if (!validateFields()) {
-            uiState = uiState.copy(errorMessage = "Por favor, corrija los errores del formulario.")
-            return
-        }
+    private fun registrar() {
+        if (!validar()) return
 
-        uiState = uiState.copy(isLoading = true, errorMessage = null)
+        uiState = uiState.copy(isLoading = true)
 
         viewModelScope.launch {
-            try {
-                // Verificar si el email ya existe
-                if (repository.isEmailRegistered(uiState.email)) {
-                    uiState = uiState.copy(
-                        isLoading = false,
-                        emailError = "Este email ya está registrado.",
-                        errorMessage = "El registro falló: el email ya existe."
-                    )
-                    return@launch
-                }
 
-                // Crear usuario nuevo
-                val newUser = User(
-                    email = uiState.email,
-                    passwordHash = uiState.password,
-                    nombre = uiState.nombre,
-                    apellido = uiState.apellido
-                )
+            val user = User(
+                id = null,
+                nombre = uiState.nombre,
+                correo = uiState.correo,
+                contrasena = uiState.contrasena,
+                rut = uiState.rut,
+                direccion = uiState.direccion,
+                region = uiState.region,
+                comuna = uiState.comuna
+            )
 
-                repository.registerUser(newUser)
+            val response = repository.register(user)
 
+            if (response != null) {
+                uiState = uiState.copy(registroExitoso = true, isLoading = false)
+            } else {
                 uiState = uiState.copy(
                     isLoading = false,
-                    registroExitoso = true,
-                    errorMessage = null
-                )
-
-                delay(1500)
-                uiState = uiState.copy(registroExitoso = false)
-
-            } catch (e: Exception) {
-                uiState = uiState.copy(
-                    isLoading = false,
-                    errorMessage = "Error al intentar registrar: ${e.message}"
+                    errorMessage = "Error al registrar usuario."
                 )
             }
         }

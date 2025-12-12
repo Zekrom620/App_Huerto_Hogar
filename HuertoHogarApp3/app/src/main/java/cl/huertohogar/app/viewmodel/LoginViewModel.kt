@@ -1,97 +1,104 @@
 package cl.huertohogar.app.viewmodel
 
-import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import cl.huertohogar.app.model.AppDatabase
-import cl.huertohogar.app.model.UserRepository
+import cl.huertohogar.app.model.LoginResponse
+import cl.huertohogar.app.model.User
+import cl.huertohogar.app.repository.UserRepositoryApi
 import kotlinx.coroutines.launch
 
-// Estado del formulario de login
 data class LoginUiState(
-    val email: String = "",
-    val password: String = "",
+    val correo: String = "",
+    val contrasena: String = "",
     val isLoading: Boolean = false,
     val loginExitoso: Boolean = false,
     val errorMessage: String? = null,
-    val emailError: String? = null,
-    val passwordError: String? = null
+    val correoError: String? = null,
+    val contrasenaError: String? = null,
+
+    // Nueva información almacenada tras login
+    val token: String? = null,
+    val userId: Long? = null,
+    val rol: String? = null
 )
 
-// Eventos que puede emitir el formulario de login
 sealed class LoginFormEvent {
-    data class EmailChanged(val value: String) : LoginFormEvent()
-    data class PasswordChanged(val value: String) : LoginFormEvent()
+    data class CorreoChanged(val value: String) : LoginFormEvent()
+    data class ContrasenaChanged(val value: String) : LoginFormEvent()
     object Submit : LoginFormEvent()
 }
 
-class LoginViewModel(context: Context) : ViewModel() {
+class LoginViewModel : ViewModel() {
 
-    // Crear repositorio internamente usando context
-    private val repository: UserRepository by lazy {
-        val db = AppDatabase.getDatabase(context)
-        UserRepository(db.userDao())
-    }
+    private val repository = UserRepositoryApi()
 
     var uiState by mutableStateOf(LoginUiState())
         private set
 
     fun onEvent(event: LoginFormEvent) {
         when (event) {
-            is LoginFormEvent.EmailChanged -> uiState = uiState.copy(email = event.value, emailError = null)
-            is LoginFormEvent.PasswordChanged -> uiState = uiState.copy(password = event.value, passwordError = null)
+            is LoginFormEvent.CorreoChanged ->
+                uiState = uiState.copy(correo = event.value, correoError = null)
+
+            is LoginFormEvent.ContrasenaChanged ->
+                uiState = uiState.copy(contrasena = event.value, contrasenaError = null)
+
             LoginFormEvent.Submit -> submitLogin()
         }
     }
 
-    private fun validateFields(): Boolean {
-        var isValid = true
-        var newState = uiState.copy(emailError = null, passwordError = null)
+    private fun validar(): Boolean {
+        var valido = true
+        var state = uiState.copy(correoError = null, contrasenaError = null)
 
-        if (newState.email.isBlank()) {
-            newState = newState.copy(emailError = "El email no puede estar vacío.")
-            isValid = false
+        if (state.correo.isBlank()) {
+            state = state.copy(correoError = "El correo no puede estar vacío.")
+            valido = false
         }
-        if (newState.password.isBlank()) {
-            newState = newState.copy(passwordError = "La contraseña no puede estar vacía.")
-            isValid = false
+        if (state.contrasena.isBlank()) {
+            state = state.copy(contrasenaError = "La contraseña no puede estar vacía.")
+            valido = false
         }
 
-        uiState = newState
-        return isValid
+        uiState = state
+        return valido
     }
 
     private fun submitLogin() {
-        if (!validateFields()) {
-            uiState = uiState.copy(errorMessage = "Por favor, ingrese sus credenciales.")
-            return
-        }
+        if (!validar()) return
 
         uiState = uiState.copy(isLoading = true, errorMessage = null)
 
         viewModelScope.launch {
-            try {
-                val user = repository.loginUser(uiState.email, uiState.password)
+            val loginUser = User(
+                id = null,
+                nombre = "",
+                correo = uiState.correo,
+                contrasena = uiState.contrasena,
+                rut = "",
+                direccion = "",
+                region = "",
+                comuna = ""
+            )
 
-                if (user != null) {
-                    uiState = uiState.copy(
-                        isLoading = false,
-                        loginExitoso = true,
-                        errorMessage = null
-                    )
-                } else {
-                    uiState = uiState.copy(
-                        isLoading = false,
-                        errorMessage = "Credenciales incorrectas. Verifique su email y contraseña."
-                    )
-                }
-            } catch (e: Exception) {
+            val response: LoginResponse? = repository.login(loginUser)
+
+            if (response != null) {
+                // Guardamos token, userId y rol en el estado
                 uiState = uiState.copy(
                     isLoading = false,
-                    errorMessage = "Error de conexión/base de datos: ${e.message}"
+                    loginExitoso = true,
+                    token = response.token,
+                    userId = response.userId,
+                    rol = response.rol
+                )
+            } else {
+                uiState = uiState.copy(
+                    isLoading = false,
+                    errorMessage = "Credenciales incorrectas."
                 )
             }
         }

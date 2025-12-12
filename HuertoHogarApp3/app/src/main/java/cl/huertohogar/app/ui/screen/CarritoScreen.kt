@@ -4,40 +4,46 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.compose.rememberNavController
 import androidx.navigation.NavController
 import cl.huertohogar.app.R
 import cl.huertohogar.app.navigation.Destinos
-import cl.huertohogar.app.ui.theme.HuertoHogarAppTheme
-
-data class ProductoCarrito(
-    val id: Int,
-    val nombre: String,
-    val precio: String,
-    val cantidad: Int,
-    val imagen: Int
-)
+import cl.huertohogar.app.viewmodel.CarritoViewModel
+import cl.huertohogar.app.viewmodel.LoginViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CarritoScreen(navController: NavController) {
-    // Carrito como estado mutable para simular vaciado
-    var productosEnCarrito by remember {
-        mutableStateOf(
-            listOf(
-                ProductoCarrito(1, "Zanahorias Orgánicas", "$1.500 / kg", 2, R.drawable.ic_plantita),
-                ProductoCarrito(2, "Tomates Cherry", "$2.000 / kg", 1, R.drawable.ic_plantita)
-            )
-        )
+fun CarritoScreen(
+    navController: NavController,
+    carritoViewModel: CarritoViewModel,
+    loginViewModel: LoginViewModel
+) {
+
+    val productos by carritoViewModel.carrito.collectAsState()
+    val isLoading by carritoViewModel.isLoading.collectAsState()
+    val errorMensaje by carritoViewModel.errorMensaje.collectAsState()
+    val compraExitosa by carritoViewModel.compraExitosa.collectAsState()
+
+    val userId = loginViewModel.uiState.userId
+
+    LaunchedEffect(compraExitosa) {
+        if (compraExitosa) {
+
+            carritoViewModel.limpiarCarrito()
+
+            navController.navigate(Destinos.Confirmacion.ruta) {
+                popUpTo(Destinos.Carrito.ruta) { inclusive = true }
+            }
+
+            carritoViewModel.resetearCompraExitosa()
+        }
     }
 
     Scaffold(
@@ -51,82 +57,87 @@ fun CarritoScreen(navController: NavController) {
                             contentDescription = "Volver"
                         )
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary
-                )
+                }
             )
         }
     ) { padding ->
+
         Column(
-            modifier = Modifier
+            Modifier
                 .padding(padding)
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            if (productosEnCarrito.isEmpty()) {
-                // Mensaje cuando el carrito está vacío
+
+            if (productos.isEmpty()) {
                 Box(
-                    modifier = Modifier.fillMaxSize(),
+                    Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "Tu carrito está vacío.",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                    )
+                    Text("Tu carrito está vacío.")
                 }
-            } else {
-                LazyColumn(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(productosEnCarrito) { producto ->
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Image(
-                                painter = painterResource(id = producto.imagen),
-                                contentDescription = producto.nombre,
-                                modifier = Modifier.size(64.dp)
-                            )
-                            Spacer(modifier = Modifier.width(16.dp))
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(producto.nombre, style = MaterialTheme.typography.titleMedium)
-                                Text("Cantidad: ${producto.cantidad}")
-                                Text(producto.precio, style = MaterialTheme.typography.bodyMedium)
-                            }
-                        }
-                        HorizontalDivider(
-                            modifier = Modifier.padding(vertical = 8.dp),
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+                return@Column
+            }
+
+            LazyColumn(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(productos) { p ->
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.ic_plantita),
+                            contentDescription = p.nombre,
+                            modifier = Modifier.size(64.dp)
                         )
+
+                        Spacer(Modifier.width(12.dp))
+
+                        Column {
+                            Text(p.nombre, style = MaterialTheme.typography.titleMedium)
+                            Text("Precio: $${p.precio}")
+                        }
                     }
+
+                    Divider()
                 }
+            }
 
-                Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Total: $${carritoViewModel.totalCarrito()}",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
 
-                Button(
-                    onClick = {
-                        // Vaciar carrito y navegar a la pantalla de confirmación
-                        productosEnCarrito = emptyList()
-                        navController.navigate(Destinos.Confirmacion.ruta)
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
+            if (errorMensaje != null) {
+                Text(
+                    errorMensaje!!,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+            }
+
+            Button(
+                onClick = {
+                    if (userId != null && !isLoading) {
+                        carritoViewModel.enviarBoleta(userId)
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !isLoading
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(22.dp),
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                } else {
                     Text("Finalizar Compra")
                 }
             }
         }
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun PreviewCarritoScreen() {
-    HuertoHogarAppTheme {
-        CarritoScreen(navController = rememberNavController())
     }
 }
