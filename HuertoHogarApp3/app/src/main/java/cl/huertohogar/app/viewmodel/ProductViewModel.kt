@@ -4,16 +4,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cl.huertohogar.app.model.Product
 import cl.huertohogar.app.repository.ProductRepositoryApi
+import cl.huertohogar.app.utils.SessionManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class ProductViewModel(
-    private val loginViewModel: LoginViewModel
-) : ViewModel() {
+class ProductViewModel : ViewModel() {
 
-    private val repository = ProductRepositoryApi { loginViewModel.uiState.token }
-
+    // 🔐 El token ahora se obtiene desde la sesión global
+    private val repository = ProductRepositoryApi { SessionManager.token }
 
     private val _productos = MutableStateFlow<List<Product>>(emptyList())
     val productos: StateFlow<List<Product>> = _productos
@@ -30,13 +29,11 @@ class ProductViewModel(
             _errorLista.value = null
 
             val lista = repository.getProducts()
-
             _productos.value = lista
 
             _isLoadingLista.value = false
         }
     }
-
 
     private val _productoDetalle = MutableStateFlow<Product?>(null)
     val productoDetalle: StateFlow<Product?> = _productoDetalle

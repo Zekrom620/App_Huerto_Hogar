@@ -12,27 +12,25 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import cl.huertohogar.app.R
 import cl.huertohogar.app.model.Product
 import cl.huertohogar.app.navigation.Destinos
-import cl.huertohogar.app.viewmodel.CarritoViewModel
 import cl.huertohogar.app.viewmodel.ProductViewModel
 import coil.compose.AsyncImage
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.draw.clip
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CatalogoScreen(
     navController: NavController,
-    viewModel: ProductViewModel,
-    carritoViewModel: CarritoViewModel
+    viewModel: ProductViewModel
 ) {
 
     val productos by viewModel.productos.collectAsState()
@@ -49,14 +47,20 @@ fun CatalogoScreen(
                 title = { Text("Catálogo HuertoHogar", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigate("lobby") }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver",
-                            tint = MaterialTheme.colorScheme.onPrimary)
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Volver",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
                     }
                 },
                 actions = {
                     IconButton(onClick = { navController.navigate(Destinos.Carrito.ruta) }) {
-                        Icon(Icons.Filled.ShoppingCart, "Carrito",
-                            tint = MaterialTheme.colorScheme.onPrimary)
+                        Icon(
+                            Icons.Filled.ShoppingCart,
+                            contentDescription = "Carrito",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -68,7 +72,7 @@ fun CatalogoScreen(
     ) { padding ->
 
         Box(
-            Modifier
+            modifier = Modifier
                 .fillMaxSize()
                 .background(
                     Brush.verticalGradient(
@@ -104,9 +108,6 @@ fun CatalogoScreen(
                                 producto = producto,
                                 onDetailClick = {
                                     navController.navigate("detalleProducto/${producto.id}")
-                                },
-                                onAddToCart = {
-                                    carritoViewModel.agregarProducto(producto)
                                 }
                             )
                         }
@@ -120,10 +121,8 @@ fun CatalogoScreen(
 @Composable
 fun ProductoCardDentro(
     producto: Product,
-    onDetailClick: () -> Unit,
-    onAddToCart: () -> Unit
+    onDetailClick: () -> Unit
 ) {
-    val imagenUrl = "http://192.168.1.4:8080/uploads/${producto.imagen}"
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -148,30 +147,26 @@ fun ProductoCardDentro(
                 error = painterResource(id = R.drawable.ic_plantita)
             )
 
-
             Spacer(Modifier.width(12.dp))
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(producto.nombre, fontWeight = FontWeight.Bold)
-                Text("Precio: $${producto.precio}", color = MaterialTheme.colorScheme.primary)
+                Text(
+                    "Precio: $${producto.precio}",
+                    color = MaterialTheme.colorScheme.primary
+                )
                 Text("Stock: ${producto.stock}")
             }
 
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-
-                Button(onClick = onDetailClick) {
-                    Text("Ver")
-                }
-
-                Spacer(Modifier.height(6.dp))
-
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.width(120.dp)
+            ) {
                 Button(
-                    onClick = onAddToCart,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    )
+                    onClick = onDetailClick,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Agregar")
+                    Text("Ver más")
                 }
             }
         }

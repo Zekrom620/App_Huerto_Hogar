@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 11-12-2025 a las 05:56:07
+-- Tiempo de generación: 16-12-2025 a las 06:16:59
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -47,7 +47,19 @@ INSERT INTO `boletas` (`id`, `detalle_productos`, `estado`, `fecha_compra`, `tot
 (4, '- Manzanas Fuji: $1200', 'Pendiente', '2025-12-11 03:32:24.000000', 1200, 0),
 (5, '- Naranjas Valencia: $1000\n- Naranjas Valencia: $1000', 'Pendiente', '2025-12-11 03:42:25.000000', 2000, 0),
 (6, '- Manzanas Fuji: $1200\n- Manzanas Fuji: $1200\n- Manzanas Fuji: $1200\n- Manzanas Fuji: $1200', 'Pendiente', '2025-12-11 03:47:03.000000', 4800, 0),
-(7, '- Manzanas Fuji: $1200\n- Manzanas Fuji: $1200\n- Manzanas Fuji: $1200\n- Manzanas Fuji: $1200\n- Naranjas Valencia: $1000\n- Naranjas Valencia: $1000\n- Naranjas Valencia: $1000\n- Plátanos Cavendish: $800\n- Plátanos Cavendish: $800\n- Plátanos Cavendish: $800\n- Plátanos Cavendish: $800', 'Pendiente', '2025-12-11 03:47:15.000000', 11000, 0);
+(7, '- Manzanas Fuji: $1200\n- Manzanas Fuji: $1200\n- Manzanas Fuji: $1200\n- Manzanas Fuji: $1200\n- Naranjas Valencia: $1000\n- Naranjas Valencia: $1000\n- Naranjas Valencia: $1000\n- Plátanos Cavendish: $800\n- Plátanos Cavendish: $800\n- Plátanos Cavendish: $800\n- Plátanos Cavendish: $800', 'Pendiente', '2025-12-11 03:47:15.000000', 11000, 0),
+(8, '- Manzanas Fuji: $1200\n- Manzanas Fuji: $1200\n- Manzanas Fuji: $1200', 'Pendiente', '2025-12-12 20:57:41.000000', 3600, 0),
+(9, '- Manzanas Fuji: $1200\n- Manzanas Fuji: $1200\n- Manzanas Fuji: $1200', 'Pendiente', '2025-12-12 21:10:07.000000', 3600, 0),
+(10, '- Manzanas Fuji: $1200\n- Manzanas Fuji: $1200\n- Manzanas Fuji: $1200\n- Naranjas Valencia: $1000', 'Pendiente', '2025-12-12 21:12:17.000000', 4600, 0),
+(11, '- Manzanas Fuji: $1200\n- Manzanas Fuji: $1200\n- Manzanas Fuji: $1200', 'Pendiente', '2025-12-12 21:35:38.000000', 3600, 0),
+(12, '- Plátanos Cavendish: $800\n- Plátanos Cavendish: $800\n- Plátanos Cavendish: $800\n- Plátanos Cavendish: $800', 'Pendiente', '2025-12-12 21:36:22.000000', 3200, 0),
+(14, '- Manzanas Fuji: $1200\n- Manzanas Fuji: $1200\n- Manzanas Fuji: $1200', 'pendiente', '2025-12-12 21:56:50.000000', 3600, 0),
+(15, '- Manzanas Fuji: $1200\n- Naranjas Valencia: $1000\n- Plátanos Cavendish: $800\n- Zanahorias Orgánicas: $900', 'pendiente', '2025-12-12 22:17:10.000000', 3900, 0),
+(16, '- Manzanas Fuji: $1200\n- Manzanas Fuji: $1200\n- Zanahorias Orgánicas: $900\n- Zanahorias Orgánicas: $900\n- Espinacas Frescas: $700\n- Espinacas Frescas: $700', 'confirmado', '2025-12-12 22:28:45.000000', 5600, 0),
+(17, '- Manzanas Fuji: $1200\n- Naranjas Valencia: $1000\n- Plátanos Cavendish: $800', 'pendiente', '2025-12-12 23:04:31.000000', 3000, 0),
+(18, '- Manzanas Fuji: $1200\n- Naranjas Valencia: $1000\n- Zanahorias Orgánicas: $900\n- Espinacas Frescas: $700', 'confirmada', '2025-12-12 23:17:38.000000', 3800, 0),
+(19, 'Naranjas Valencia x22', 'Pendiente', '2025-12-16 04:42:30.000000', 22000, 8),
+(20, 'Manzanas Fuji x10', 'Pendiente', '2025-12-16 04:50:00.000000', 12000, 8);
 
 -- --------------------------------------------------------
 
@@ -87,7 +99,7 @@ CREATE TABLE `products` (
 --
 
 INSERT INTO `products` (`id`, `categoria`, `codigo`, `descripcion`, `imagen`, `nombre`, `origen`, `precio`, `stock`) VALUES
-(1, 'frutas-frescas', 'FR001', 'Manzanas Fuji crujientes y dulces, cultivadas en el Valle del Maule. Perfectas para meriendas saludables o como ingrediente en postres. Se distinguen por su textura firme y su sabor equilibrado entre dulce y ácido.', 'uploads/manzana_fuji.png', 'Manzanas Fuji', 'Valle del Maule', 1200, 150),
+(1, 'frutas-frescas', 'FR001', 'Manzanas Fuji crujientes y dulces, cultivadas en el Valle del Maule. Perfectas para meriendas saludables o como ingrediente en postres. Se distinguen por su textura firme y su sabor equilibrado entre dulce y ácido.', 'uploads/manzana_fuji.png', 'Manzanas Fuji', 'Valle del Maule', 1200, 75),
 (2, 'frutas-frescas', 'FR002', 'Jugosas y ricas en vitamina C, estas naranjas Valencia son ideales para zumos frescos y refrescantes. Cultivadas en condiciones climáticas óptimas que aseguran su dulzura y jugosidad.', 'uploads/naranja_valencia.png', 'Naranjas Valencia', 'Región de Coquimbo', 1000, 200),
 (3, 'frutas-frescas', 'FR003', 'Plátanos maduros y dulces, perfectos para el desayuno o como snack energético. Estos plátanos son ricos en potasio y vitaminas, ideales para mantener una dieta equilibrada.', 'uploads/platano_cavendish.png', 'Plátanos Cavendish', 'Importación Justa', 800, 250),
 (4, 'verduras-organicas', 'VR001', 'Zanahorias crujientes cultivadas sin pesticidas en la Región de O\'Higgins. Excelente fuente de vitamina A y fibra, ideales para ensaladas, jugos o como snack saludable.', 'uploads/zanahoria_organica.png', 'Zanahorias Orgánicas', 'Región de O\'Higgins', 900, 100),
@@ -123,7 +135,9 @@ INSERT INTO `users` (`id`, `comuna`, `contrasena`, `correo`, `nombre`, `region`,
 (1, 'Providencia', '$2a$10$seo8wEgBaB0D04X7iGyz/uJ/.jdRPiG0ndoIjgwo6GdTUZxqn0WvO', 'mauricio@profesor.duoc.cl', 'Mauricio González', 'Santiago', 'administrador', NULL, ''),
 (3, 'Santiago', '$2a$10$zVKbBMiraY8CHyp.NRiEPONto/qB8LQ8IYYMGsQSTmSEi90wLhM7W', 'sergio@gmail.com', 'sergio', 'Santiago', 'cliente', NULL, ''),
 (5, 'Santiago', '$2a$10$AbPfntX2B1c9c3cFD9hhguELiCMdAH9vumUg4vG4qthzme.co8Yzy', 'suazo@gmail.com', 'pele suazo', 'Santiago', 'cliente', 'el roble 500', '15873489-4'),
-(6, 'atacama', '$2a$10$UtOUqdkIhL0pzHZV73Er5.i4yaqf5Vicf.DLbgmwwNokDnpJxfjBe', 'bryan@gmail.com', 'bryan', 'atacama', 'cliente', 'atacama 123', '123456789');
+(6, 'atacama', '$2a$10$UtOUqdkIhL0pzHZV73Er5.i4yaqf5Vicf.DLbgmwwNokDnpJxfjBe', 'bryan@gmail.com', 'bryan', 'atacama', 'cliente', 'atacama 123', '123456789'),
+(7, 'santiago', '$2a$10$uCN9BRscBO96MtMsqvUS6OGU9sPuGYhsRzk4lt18XU60/EuRnmtOi', 'francisco@gmail.com', 'francisco', 'metropolitana', 'cliente', 'grancisco 1101', '57962581'),
+(8, 'santiago', '$2a$10$yTTOAiuDOca7gZPRGULFhedRHDXzUgd1Qd9yuv24bQHHWqTdGQt.2', 'matias@gmail.com', 'matias', 'metropolitana', 'cliente', 'duoc', '57946358');
 
 --
 -- Índices para tablas volcadas
@@ -163,7 +177,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT de la tabla `boletas`
 --
 ALTER TABLE `boletas`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT de la tabla `contactos`
@@ -181,7 +195,7 @@ ALTER TABLE `products`
 -- AUTO_INCREMENT de la tabla `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

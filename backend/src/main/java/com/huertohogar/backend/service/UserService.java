@@ -8,6 +8,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+
 import java.util.List;
 
 @Service
@@ -19,7 +20,6 @@ public class UserService implements UserDetailsService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    // --- MÉTODO REQUERIDO POR UserDetailsService ---
     @Override
     public UserDetails loadUserByUsername(String correo) throws UsernameNotFoundException {
         User user = repo.findByCorreo(correo);
@@ -33,23 +33,18 @@ public class UserService implements UserDetailsService {
         return repo.findAll();
     }
 
-    // --- LÓGICA DE REGISTRO (Sin cambios, ya acepta todos los campos nuevos) ---
     public User register(User user) {
-        if (repo.findByCorreo(user.getCorreo()) != null) { return null; }
-        try {
-            String encodedPassword = passwordEncoder.encode(user.getContrasena());
-            user.setContrasena(encodedPassword);
-            user.setRol("cliente");
-            // Nota: Los campos rut y direccion se guardan automáticamente aquí
-            return repo.save(user);
-        } catch (Exception e) {
-            System.err.println("CRÍTICO: Error al intentar guardar el usuario en la BD: " + e.getMessage());
-            e.printStackTrace(); 
+        if (repo.findByCorreo(user.getCorreo()) != null) {
             return null;
         }
+
+        String encodedPassword = passwordEncoder.encode(user.getContrasena());
+        user.setContrasena(encodedPassword);
+        user.setRol("cliente");
+
+        return repo.save(user);
     }
 
-    // --- LÓGICA DE LOGIN (sin cambios) ---
     public User login(String correo, String contrasena) {
         User user = repo.findByCorreo(correo);
         if (user != null && passwordEncoder.matches(contrasena, user.getContrasena())) {
@@ -61,22 +56,35 @@ public class UserService implements UserDetailsService {
     public void delete(Long id) {
         repo.deleteById(id);
     }
-    
-    // --- LÓGICA DE ACTUALIZACIÓN (CRÍTICO: Añadimos RUT y DIRECCIÓN) ---
+
     public User update(Long id, User userDetails) {
         User user = repo.findById(id).orElse(null);
         if (user == null) return null;
 
-        // Actualizamos los campos principales
         user.setNombre(userDetails.getNombre());
         user.setRegion(userDetails.getRegion());
         user.setComuna(userDetails.getComuna());
-        user.setRol(userDetails.getRol()); 
-        
-        // AÑADIDO: Actualizamos los nuevos campos
         user.setRut(userDetails.getRut());
         user.setDireccion(userDetails.getDireccion());
 
         return repo.save(user);
+    }
+
+    // ===== NUEVO: CAMBIO DE CONTRASEÑA =====
+    public boolean cambiarContrasena(Long id, String passwordActual, String passwordNueva) {
+
+        User user = repo.findById(id).orElse(null);
+        if (user == null) return false;
+
+        // Validar contraseña actual
+        if (!passwordEncoder.matches(passwordActual, user.getContrasena())) {
+            return false;
+        }
+
+        // Guardar nueva contraseña encriptada
+        user.setContrasena(passwordEncoder.encode(passwordNueva));
+        repo.save(user);
+
+        return true;
     }
 }

@@ -8,7 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/products") 
+@RequestMapping("/api/v1/products") // Esta será la dirección web de tus productos
+// @CrossOrigin(origins = "http://localhost:3000") <-- LÍNEA ELIMINADA
 public class ProductController {
 
     @Autowired

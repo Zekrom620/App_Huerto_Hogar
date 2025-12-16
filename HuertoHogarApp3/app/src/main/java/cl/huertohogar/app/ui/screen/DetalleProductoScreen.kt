@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import cl.huertohogar.app.R
 import cl.huertohogar.app.model.Product
+import cl.huertohogar.app.viewmodel.CarritoViewModel
 import cl.huertohogar.app.viewmodel.ProductViewModel
 import coil.compose.AsyncImage
 
@@ -26,11 +27,15 @@ import coil.compose.AsyncImage
 fun DetalleProductoScreen(
     navController: NavController,
     viewModel: ProductViewModel,
+    carritoViewModel: CarritoViewModel,
     idProducto: Long
 ) {
+
     val producto by viewModel.productoDetalle.collectAsState()
     val isLoading by viewModel.isLoadingDetalle.collectAsState()
     val errorMessage by viewModel.errorDetalle.collectAsState()
+
+    var cantidad by remember { mutableStateOf(1) }
 
     LaunchedEffect(idProducto) {
         viewModel.cargarProductoPorId(idProducto)
@@ -42,10 +47,7 @@ fun DetalleProductoScreen(
                 title = { Text("Detalle del Producto") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Volver"
-                        )
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver")
                     }
                 }
             )
@@ -56,103 +58,68 @@ fun DetalleProductoScreen(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface)
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
             when {
-                isLoading -> {
-                    Spacer(Modifier.height(200.dp))
-                    CircularProgressIndicator()
-                }
+                isLoading -> CircularProgressIndicator()
+                errorMessage != null -> Text(errorMessage!!, color = MaterialTheme.colorScheme.error)
+                producto != null -> {
 
-                errorMessage != null -> {
-                    Spacer(Modifier.height(100.dp))
-                    Text(
-                        text = errorMessage ?: "Error desconocido",
-                        color = MaterialTheme.colorScheme.error,
-                        fontSize = 18.sp
+                    val p = producto!!
+
+                    AsyncImage(
+                        model = "http://192.168.1.4:8080/${p.imagen}",
+                        contentDescription = p.nombre,
+                        modifier = Modifier.size(240.dp).clip(RoundedCornerShape(16.dp)),
+                        contentScale = ContentScale.Crop,
+                        placeholder = painterResource(R.drawable.ic_plantita)
                     )
-                }
 
-                producto == null -> {
-                    Spacer(Modifier.height(100.dp))
-                    Text("Producto no encontrado.", fontSize = 18.sp)
-                }
+                    Spacer(Modifier.height(16.dp))
+                    Text(p.nombre, fontSize = 28.sp, fontWeight = FontWeight.Bold)
+                    Text(p.descripcion, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
 
-                else -> {
-                    DetalleProductoContent(
-                        producto = producto!!,
-                        onAgregarCarrito = {
-                        }
-                    )
+                    Spacer(Modifier.height(12.dp))
+                    Text("Precio: $${p.precio}", fontSize = 22.sp, color = MaterialTheme.colorScheme.primary)
+                    Text("Stock disponible: ${p.stock}")
+
+                    Spacer(Modifier.height(16.dp))
+
+                    // 🔢 SELECTOR DE CANTIDAD
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Button(
+                            onClick = { if (cantidad > 1) cantidad-- },
+                            enabled = cantidad > 1
+                        ) { Text("-") }
+
+                        Text(
+                            cantidad.toString(),
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            fontSize = 20.sp
+                        )
+
+                        Button(
+                            onClick = { if (cantidad < p.stock) cantidad++ },
+                            enabled = cantidad < p.stock
+                        ) { Text("+") }
+                    }
+
+                    Spacer(Modifier.height(24.dp))
+
+                    Button(
+                        onClick = {
+                            carritoViewModel.agregarProducto(p, cantidad)
+                            navController.navigate("carrito")
+                        },
+                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                        enabled = p.stock > 0
+                    ) {
+                        Text("Agregar al carrito", fontSize = 18.sp)
+                    }
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun DetalleProductoContent(
-    producto: Product,
-    onAgregarCarrito: () -> Unit
-) {
-    val imageUrl = "http://192.168.1.4:8080/${producto.imagen}"
-
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-
-        AsyncImage(
-            model = imageUrl,
-            contentDescription = producto.nombre,
-            modifier = Modifier
-                .size(240.dp)
-                .clip(RoundedCornerShape(16.dp)),
-            contentScale = ContentScale.Crop,
-            placeholder = painterResource(id = R.drawable.ic_plantita),
-            error = painterResource(id = R.drawable.ic_plantita)
-        )
-
-        Spacer(Modifier.height(16.dp))
-
-        Text(producto.nombre, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold)
-
-        Spacer(Modifier.height(8.dp))
-
-        Text(
-            producto.descripcion,
-            fontSize = 16.sp,
-            lineHeight = 24.sp,
-            modifier = Modifier.padding(horizontal = 16.dp),
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-        )
-
-        Spacer(Modifier.height(16.dp))
-
-        Text(
-            "Stock: ${producto.stock}",
-            fontSize = 16.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.secondary
-        )
-
-        Spacer(Modifier.height(8.dp))
-
-        Text(
-            "$${producto.precio}",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
-        )
-
-        Spacer(Modifier.height(24.dp))
-
-        Button(
-            onClick = onAgregarCarrito,
-            shape = RoundedCornerShape(16.dp),
-            modifier = Modifier.fillMaxWidth().height(56.dp)
-        ) {
-            Text("Agregar al carrito", fontSize = 18.sp)
         }
     }
 }

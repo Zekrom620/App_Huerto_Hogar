@@ -21,23 +21,36 @@ class UserRepositoryApi(
         }
     }
 
-    private fun validateUser(user: User): Boolean {
-        if (user.correo.isBlank()) return false
-        if (user.contrasena.isBlank()) return false
-        return true
+    suspend fun register(user: User): User? =
+        handleResponse(apiService.registerUser(user), "REGISTER")
+
+    suspend fun login(user: User): LoginResponse? =
+        handleResponse(apiService.login(user), "LOGIN")
+
+    suspend fun getUsers(): List<User> =
+        handleResponse(apiService.getUsers(), "GET_USERS") ?: emptyList()
+
+    // 🔐 Cambio de contraseña (ya listo)
+    suspend fun cambiarContrasena(
+        userId: Long,
+        passwordActual: String,
+        passwordNueva: String
+    ): Boolean {
+        val body = mapOf(
+            "passwordActual" to passwordActual,
+            "passwordNueva" to passwordNueva
+        )
+        return apiService.changePassword(userId, body).isSuccessful
     }
 
-    suspend fun register(user: User): User? {
-        if (!validateUser(user)) return null
-        return handleResponse(apiService.registerUser(user), "REGISTER")
+    // 🟢 NUEVO: actualizar perfil
+    suspend fun actualizarPerfil(user: User): User? {
+        val id = user.id ?: return null
+        return handleResponse(apiService.updateUser(id, user), "UPDATE_PROFILE")
     }
 
-    suspend fun login(user: User): LoginResponse? {
-        if (!validateUser(user)) return null
-        return handleResponse(apiService.login(user), "LOGIN")
-    }
-
-    suspend fun getUsers(): List<User> {
-        return handleResponse(apiService.getUsers(), "GET_USERS") ?: emptyList()
+    // 🟢 NUEVO: eliminar cuenta
+    suspend fun eliminarCuenta(userId: Long): Boolean {
+        return apiService.deleteUser(userId).isSuccessful
     }
 }

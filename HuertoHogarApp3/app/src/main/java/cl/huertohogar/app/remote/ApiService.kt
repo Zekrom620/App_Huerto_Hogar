@@ -1,10 +1,6 @@
 package cl.huertohogar.app.remote
 
-import cl.huertohogar.app.model.User
-import cl.huertohogar.app.model.Product
-import cl.huertohogar.app.model.Boleta
-import cl.huertohogar.app.model.Contacto
-import cl.huertohogar.app.model.LoginResponse
+import cl.huertohogar.app.model.*
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -32,6 +28,12 @@ interface ApiService {
     @DELETE("users/{id}")
     suspend fun deleteUser(@Path("id") id: Long): Response<Unit>
 
+    // 🔐 NUEVO: cambiar contraseña
+    @PUT("users/{id}/password")
+    suspend fun changePassword(
+        @Path("id") id: Long,
+        @Body body: Map<String, String>
+    ): Response<Map<String, String>>
 
     // =======================
     // PRODUCTS
@@ -55,15 +57,12 @@ interface ApiService {
     @DELETE("products/{id}")
     suspend fun deleteProduct(@Path("id") id: Long): Response<Unit>
 
-
     // =======================
-    // BOLETA (Checkout)
+    // BOLETA
     // =======================
 
     @POST("checkout")
     suspend fun sendBoleta(@Body boleta: Boleta): Response<Boleta>
-
-
 
     // =======================
     // CONTACTO

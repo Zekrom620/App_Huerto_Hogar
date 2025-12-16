@@ -1,6 +1,7 @@
 package cl.huertohogar.app.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -31,10 +32,11 @@ fun NavManager() {
 
     val loginViewModel = remember { LoginViewModel() }
     val registroViewModel = remember { RegistroViewModel() }
+    val productViewModel = remember { ProductViewModel() }
+    val carritoViewModel = remember { CarritoViewModel() }
 
-    val productViewModel = remember { ProductViewModel(loginViewModel) }
-
-    val carritoViewModel = remember { CarritoViewModel(loginViewModel) }
+    val perfilViewModel = remember { PerfilViewModel() }
+    val changePasswordViewModel = remember { ChangePasswordViewModel() }
 
     NavHost(
         navController = navController,
@@ -46,6 +48,13 @@ fun NavManager() {
         }
 
         composable(Destinos.Login.ruta) {
+            LaunchedEffect(loginViewModel.uiState.loginExitoso) {
+                if (loginViewModel.uiState.loginExitoso) {
+                    navController.navigate(Destinos.Lobby.ruta) {
+                        popUpTo(Destinos.Login.ruta) { inclusive = true }
+                    }
+                }
+            }
             LoginScreen(navController, loginViewModel)
         }
 
@@ -53,11 +62,14 @@ fun NavManager() {
             RegistroScreen(navController, registroViewModel)
         }
 
+        composable(Destinos.Lobby.ruta) {
+            LobbyScreen(navController)
+        }
+
         composable(Destinos.Catalogo.ruta) {
             CatalogoScreen(
                 navController = navController,
-                viewModel = productViewModel,
-                carritoViewModel = carritoViewModel
+                viewModel = productViewModel
             )
         }
 
@@ -69,6 +81,7 @@ fun NavManager() {
             DetalleProductoScreen(
                 navController = navController,
                 viewModel = productViewModel,
+                carritoViewModel = carritoViewModel,
                 idProducto = id
             )
         }
@@ -76,13 +89,17 @@ fun NavManager() {
         composable(Destinos.Carrito.ruta) {
             CarritoScreen(
                 navController = navController,
-                carritoViewModel = carritoViewModel,
-                loginViewModel = loginViewModel
+                carritoViewModel = carritoViewModel
             )
         }
 
         composable(Destinos.Perfil.ruta) {
-            PerfilScreen(navController)
+            PerfilScreen(
+                navController = navController,
+                loginViewModel = loginViewModel,
+                perfilVM = perfilViewModel,
+                passwordVM = changePasswordViewModel
+            )
         }
 
         composable(Destinos.Seguimiento.ruta) {
@@ -95,10 +112,6 @@ fun NavManager() {
 
         composable(Destinos.Confirmacion.ruta) {
             ConfirmacionScreen(navController)
-        }
-
-        composable(Destinos.Lobby.ruta) {
-            LobbyScreen(navController)
         }
     }
 }

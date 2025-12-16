@@ -4,7 +4,7 @@ data class User(
     val id: Long? = null,
     val nombre: String,
     val correo: String,
-    val contrasena: String,
+    val contrasena: String? = null,
     val rut: String,
     val direccion: String,
     val region: String,

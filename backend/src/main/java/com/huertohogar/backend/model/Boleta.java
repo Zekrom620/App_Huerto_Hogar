@@ -24,7 +24,7 @@ public class Boleta {
     private String detalleProductos;
 
     @Column(nullable = false)
-    private String estado = "confirmado"; // Estado inicial de la orden
+    private String estado = "Pendiente"; // Estado inicial de la orden
     
     @Column(nullable = false)
     private LocalDateTime fechaCompra = LocalDateTime.now(); // Fecha y hora de la compra

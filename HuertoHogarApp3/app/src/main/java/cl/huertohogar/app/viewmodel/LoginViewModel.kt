@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import cl.huertohogar.app.model.LoginResponse
 import cl.huertohogar.app.model.User
 import cl.huertohogar.app.repository.UserRepositoryApi
+import cl.huertohogar.app.utils.SessionManager
 import kotlinx.coroutines.launch
 
 data class LoginUiState(
@@ -19,7 +20,7 @@ data class LoginUiState(
     val correoError: String? = null,
     val contrasenaError: String? = null,
 
-    // Nueva información almacenada tras login
+    // Sesión
     val token: String? = null,
     val userId: Long? = null,
     val rol: String? = null
@@ -41,10 +42,18 @@ class LoginViewModel : ViewModel() {
     fun onEvent(event: LoginFormEvent) {
         when (event) {
             is LoginFormEvent.CorreoChanged ->
-                uiState = uiState.copy(correo = event.value, correoError = null)
+                uiState = uiState.copy(
+                    correo = event.value,
+                    correoError = null,
+                    errorMessage = null
+                )
 
             is LoginFormEvent.ContrasenaChanged ->
-                uiState = uiState.copy(contrasena = event.value, contrasenaError = null)
+                uiState = uiState.copy(
+                    contrasena = event.value,
+                    contrasenaError = null,
+                    errorMessage = null
+                )
 
             LoginFormEvent.Submit -> submitLogin()
         }
@@ -52,12 +61,13 @@ class LoginViewModel : ViewModel() {
 
     private fun validar(): Boolean {
         var valido = true
-        var state = uiState.copy(correoError = null, contrasenaError = null)
+        var state = uiState.copy(correoError = null, contrasenaError = null, errorMessage = null)
 
         if (state.correo.isBlank()) {
             state = state.copy(correoError = "El correo no puede estar vacío.")
             valido = false
         }
+
         if (state.contrasena.isBlank()) {
             state = state.copy(contrasenaError = "La contraseña no puede estar vacía.")
             valido = false
@@ -73,6 +83,7 @@ class LoginViewModel : ViewModel() {
         uiState = uiState.copy(isLoading = true, errorMessage = null)
 
         viewModelScope.launch {
+
             val loginUser = User(
                 id = null,
                 nombre = "",
@@ -87,20 +98,37 @@ class LoginViewModel : ViewModel() {
             val response: LoginResponse? = repository.login(loginUser)
 
             if (response != null) {
-                // Guardamos token, userId y rol en el estado
+
+                // 🔥 SESIÓN REAL (CLAVE)
+                SessionManager.token = response.token
+                SessionManager.user = response.user.copy(contrasena = "")
+                SessionManager.userId = response.user.id
+                SessionManager.rol = response.user.rol
+
                 uiState = uiState.copy(
                     isLoading = false,
                     loginExitoso = true,
                     token = response.token,
-                    userId = response.userId,
-                    rol = response.rol
+                    userId = response.user.id,
+                    rol = response.user.rol,
+                    errorMessage = null
                 )
+
             } else {
                 uiState = uiState.copy(
                     isLoading = false,
+                    loginExitoso = false,
+                    token = null,
+                    userId = null,
+                    rol = null,
                     errorMessage = "Credenciales incorrectas."
                 )
             }
         }
+    }
+
+    // 🔁 Reset de estado (logout)
+    fun reset() {
+        uiState = LoginUiState()
     }
 }

@@ -3,68 +3,105 @@ package com.huertohogar.backend.controller;
 import com.huertohogar.backend.model.User;
 import com.huertohogar.backend.service.UserService;
 import com.huertohogar.backend.utils.JwtUtil;
+import com.huertohogar.backend.dto.PasswordChangeRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
 @RestController
-@RequestMapping("/api/v1/users") // La dirección base será /api/v1/users
-// @CrossOrigin(origins = "http://localhost:3000") <-- ESTA LÍNEA SE ELIMINÓ
+@RequestMapping("/api/v1/users")
 public class UserController {
 
     @Autowired
     private UserService service;
-    
-    @Autowired 
-    private JwtUtil jwtUtil; 
 
-    // 1. Listar todos los usuarios (Para AdminUsers.jsx)
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    // ================== LISTAR USUARIOS ==================
     @GetMapping
     public List<User> list() {
         return service.getAll();
     }
 
-    // 2. Registrarse (Para Register.jsx)
+    // ================== REGISTRO ==================
     @PostMapping("/register")
     public User register(@RequestBody User user) {
         return service.register(user);
     }
 
-    // 3. Iniciar Sesión (Para Login.jsx) - DEVUELVE TOKEN
+    // ================== LOGIN (CORREGIDO) ==================
     @PostMapping("/login")
-    public Map<String, Object> login(@RequestBody User credentials) {
-        User user = service.login(credentials.getCorreo(), credentials.getContrasena());
-        
-        Map<String, Object> response = new HashMap<>();
+    public ResponseEntity<?> login(@RequestBody User credentials) {
 
-        if (user != null) {
-            // Generamos el token JWT con el correo y el rol
-            String token = jwtUtil.generateToken(user.getCorreo(), user.getRol());
+        User user = service.login(
+                credentials.getCorreo(),
+                credentials.getContrasena()
+        );
 
-            response.put("token", token);
-            
-            // Seguridad: Borramos la contraseña antes de devolver el objeto
-            user.setContrasena(null); 
-            response.put("user", user);
-
-            return response; // Login exitoso con el token y los datos del usuario
+        // ❌ Credenciales incorrectas → 401
+        if (user == null) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Credenciales inválidas"));
         }
-        
-        // Si el login falla
-        response.put("error", "Credenciales inválidas");
-        return response; 
+
+        // ✅ Credenciales correctas
+        String token = jwtUtil.generateToken(
+                user.getCorreo(),
+                user.getRol()
+        );
+
+        user.setContrasena(null); // nunca devolver password
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", token);
+        response.put("user", user);
+
+        return ResponseEntity.ok(response);
     }
 
+    // ================== ACTUALIZAR PERFIL ==================
+    @PutMapping("/{id}")
+    public User update(@PathVariable Long id, @RequestBody User user) {
+        return service.update(id, user);
+    }
+
+    // ================== ELIMINAR CUENTA ==================
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
         service.delete(id);
     }
 
-    @PutMapping("/{id}")
-    public User update(@PathVariable Long id, @RequestBody User user) {
-        return service.update(id, user);
+    // ================== CAMBIO DE CONTRASEÑA ==================
+    @PutMapping("/{id}/password")
+    public ResponseEntity<Map<String, String>> cambiarContrasena(
+            @PathVariable Long id,
+            @RequestBody PasswordChangeRequest request
+    ) {
+
+        boolean ok = service.cambiarContrasena(
+                id,
+                request.getPasswordActual(),
+                request.getPasswordNueva()
+        );
+
+        Map<String, String> response = new HashMap<>();
+
+        if (ok) {
+            response.put("mensaje", "Contraseña actualizada correctamente");
+            return ResponseEntity.ok(response);
+        } else {
+            response.put("mensaje", "Contraseña actual incorrecta");
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(response);
+        }
     }
 }

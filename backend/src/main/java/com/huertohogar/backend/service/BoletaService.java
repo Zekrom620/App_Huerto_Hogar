@@ -11,9 +11,8 @@ public class BoletaService {
     @Autowired
     private BoletaRepository repo;
 
+    // Método para guardar la boleta
     public Boleta save(Boleta boleta) {
-        boleta.setEstado("pendiente");
         return repo.save(boleta);
     }
 }
-
